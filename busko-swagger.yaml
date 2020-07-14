@@ -1,0 +1,470 @@
+swagger: '2.0'
+info:
+  description: This includes the API design documentation for Busko
+  version: 1.0.0
+  title: Busko API Design
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+host: host
+basePath: /v1
+tags:
+  - name: driver
+    description: Create and update drivers
+    externalDocs:
+      description: Find out more
+      url: 'http://swagger.io'
+  - name: passenger
+    description: Create and update passengers
+    externalDocs:
+      description: Find out more
+      url: 'http://swagger.io'
+  - name: bus
+    description: Create and update busses
+    externalDocs:
+      description: Find out more
+      url: 'http://swagger.io'
+  - name: trip
+    description: Create and update trips
+    externalDocs:
+      description: Find out more
+      url: 'http://swagger.io'
+schemes:
+  - https
+  - http
+paths:
+  /driver:
+    post:
+      tags:
+        - driver
+      summary: Add a new driver
+      description: ''
+      operationId: createDriver
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Driver object that needs to be saved to the store
+          required: true
+          schema:
+            $ref: '#/definitions/Driver'
+      responses:
+        '405':
+          description: Invalid input
+    put:
+      tags:
+        - driver
+      summary: Update an existing driver
+      description: ''
+      operationId: updateDriver
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Driver object that needs to update
+          required: true
+          schema:
+            $ref: '#/definitions/Driver'
+      responses:
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Driver not found
+        '405':
+          description: Validation exception
+  '/driver/{driverId}':
+    get:
+      tags:
+        - driver
+      summary: Find driver by ID
+      description: Returns a single driver
+      operationId: getDriverById
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: driverId
+          in: path
+          description: ID of pet to return
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Driver'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Pet not found
+      security:
+        - api_key: []
+    patch:
+      tags:
+        - driver
+      summary: Updates a driver in the store with form data
+      description: ''
+      operationId: updateDriverWithForm
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: driverId
+          in: path
+          description: ID of driver that needs to be updated
+          required: true
+          type: integer
+          format: int64
+        - name: name
+          in: formData
+          description: Updated name of the pet
+          required: false
+          type: string
+        - name: status
+          in: formData
+          description: Updated status of the pet
+          required: false
+          type: string
+      responses:
+        '405':
+          description: Invalid input
+      security:
+        - petstore_auth:
+            - 'write:pets'
+            - 'read:pets'
+  /busses:
+    get:
+      tags:
+        - bus
+      summary: Returns list of busses
+      description: ''
+      operationId: getBussesOnUserPath
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: start
+          in: query
+          description: location where user enters the bus
+          required: true
+          type: string
+        - name: password
+          in: query
+          description: location where user exits the bus
+          required: true
+          type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: string
+          headers:
+            X-Rate-Limit:
+              type: integer
+              format: int32
+              description: calls per hour allowed by the user
+            X-Expires-After:
+              type: string
+              format: date-time
+              description: date in UTC when token expires
+        '400':
+          description: Invalid parameters supplied
+  '/busses/{busId}/trips':
+    get:
+      tags:
+        - trip
+      summary: List of future trips of the selected bus
+      parameters:
+        - name: busId
+          in: path
+          description: ID of bus to return
+          required: true
+          type: integer
+          format: int64
+      produces:
+        - application/xml
+        - application/json
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Trip'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Order not found
+  '/busses/{busId}/trips/{tripId}':
+    get:
+      tags:
+        - trip
+      summary: 'View the details of the trip, route, time, available seats'
+      parameters:
+        - name: busId
+          in: path
+          description: ID of bus for the trip
+          required: true
+          type: integer
+          format: int64
+        - name: tripId
+          in: path
+          description: ID of trip to return
+          required: true
+          type: integer
+          format: int64
+      produces:
+        - application/xml
+        - application/json
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Trip'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Not found
+  '/busses/{busId}/trips/{tripId}/reservations':
+    get:
+      tags:
+        - reservation
+      summary: For the driver to view reservations
+      parameters:
+        - name: busId
+          in: path
+          description: ID of bus for the trip
+          required: true
+          type: integer
+          format: int64
+        - name: tripId
+          in: path
+          description: ID of trip to return
+          required: true
+          type: integer
+          format: int64
+      produces:
+        - application/xml
+        - application/json
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Reservation'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Not found
+    post:
+      tags:
+        - reservation
+      summary: Create a reservation
+      parameters:
+        - name: busId
+          in: path
+          description: ID of bus for the trip
+          required: true
+          type: integer
+          format: int64
+        - name: tripId
+          in: path
+          description: ID of trip to return
+          required: true
+          type: integer
+          format: int64
+      produces:
+        - application/xml
+        - application/json
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Reservation'
+        '400':
+          description: Invalid Order
+  '/busses/{busId}/trips/{tripId}/reservations/{reservationId}':
+    patch:
+      tags:
+        - reservation
+      summary: For the driver to approve the reservation
+      parameters:
+        - name: busId
+          in: path
+          description: ID of bus for the trip
+          required: true
+          type: integer
+          format: int64
+        - name: tripId
+          in: path
+          description: ID of trip to return
+          required: true
+          type: integer
+          format: int64
+        - name: reservationId
+          in: path
+          description: ID of reservation to patch
+          required: true
+          type: integer
+          format: int64
+        - name: status
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Status'
+      produces:
+        - application/xml
+        - application/json
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Reservation'
+        '400':
+          description: Invalid Input
+securityDefinitions:
+  petstore_auth:
+    type: oauth2
+    authorizationUrl: 'http://petstore.swagger.io/oauth/dialog'
+    flow: implicit
+    scopes:
+      'write:pets': modify pets in your account
+      'read:pets': read your pets
+  api_key:
+    type: apiKey
+    name: api_key
+    in: header
+definitions:
+  Bus:
+    type: object
+    properties:
+      busId:
+        type: integer
+        format: int64
+      driverId:
+        type: integer
+        format: int64
+      seats:
+        type: integer
+        format: int64
+  Trip:
+    type: object
+    properties:
+      tripId:
+        type: integer
+        format: int64
+      availableSeats:
+        type: integer
+        format: int64
+      startDateTime:
+        type: string
+        format: date-time
+      endDateTime:
+        type: string
+        format: date-time
+      routeId:
+        type: integer
+        format: int64
+  Route:
+    type: object
+    properties:
+      routeId:
+        type: integer
+        format: int64
+      description:
+        type: string
+      path:
+        type: string
+        description: list of points or waypoints
+  Reservation:
+    type: object
+    properties:
+      reservationId:
+        type: integer
+        format: int64
+      passengerId:
+        type: integer
+        format: int64
+      tripId:
+        type: integer
+        format: int64
+      status:
+        type: string
+        description: Reservation Status
+        enum:
+          - placed
+          - approved
+  Status:
+    type: object
+    properties:
+      status:
+        type: string
+        enum:
+          - placed
+          - approved
+  Driver:
+    type: object
+    properties:
+      driverId:
+        type: integer
+        format: int64
+      name:
+        type: string
+        description: Driver Name
+      mobileNo:
+        type: string
+        description: Driver Mobile No
+  Passenger:
+    type: object
+    properties:
+      'passengerId]':
+        type: integer
+        format: int64
+      name:
+        type: string
+        description: Passenger Name
+      mobileNo:
+        type: string
+        description: Passenger Mobile No
+      start:
+        type: string
+        description: Passenger start location
+      end:
+        type: string
+        description: Passenger end location
+  Tag:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      name:
+        type: string
+    xml:
+      name: Tag
+  ApiResponse:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      type:
+        type: string
+      message:
+        type: string
+externalDocs:
+  description: Find out more about Swagger
+  url: 'http://swagger.io'
+
